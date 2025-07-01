@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import WordPreview from "@/components/WordPreview";
+import { getUserVocabList, getUserDueVocab } from "@/services/api"; 
 
 interface Vocab {
   id: number;
@@ -29,22 +30,21 @@ const VocabularyList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchVocabs = (type: "all" | "due") => {
+  const fetchVocabs = async (type: "all" | "due") => {
     setLoading(true);
-    const token = localStorage.getItem("access_token");
-    const url =
-      type === "all"
-        ? "http://127.0.0.1:8000/api/vocab/user_vocab/list"
-        : "http://127.0.0.1:8000/api/vocab/user_vocab/due";
-
-    fetch(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        type === "all" ? setAllVocabs(data) : setDueVocabs(data);
-      })
-      .finally(() => setLoading(false));
+    try {
+      if (type === "all") {
+        const data = await getUserVocabList();
+        setAllVocabs(data);
+      } else {
+        const data = await getUserDueVocab();
+        setDueVocabs(data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

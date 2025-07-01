@@ -4,6 +4,7 @@ import ReviewMultipleChoice from "@/components/Review/ReviewMultipleChoice";
 import ReviewTyping from "@/components/Review/ReviewTyping";
 import ReviewMatching from "@/components/Review/ReviewMatching";
 import ReviewListening from "@/components/Review/ReviewListening";
+import { getDueVocabsOnly, submitReviewResult } from "@/services/api";
 
 const BATCH_SIZE = 20;
 const REVIEW_METHODS = [
@@ -42,17 +43,14 @@ const VocabularyReview: React.FC = () => {
   }>({});
   const [loading, setLoading] = useState(true);
 
-  const accessToken = localStorage.getItem("access_token");
-
   useEffect(() => {
     setLoading(true);
-    fetch("http://127.0.0.1:8000/api/vocab/user_vocab/due", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setVocabs(data.map((item: any) => item.vocab)))
+    getDueVocabsOnly()
+      .then((data) => setVocabs(data.map((item) => item.vocab)))
+      .catch((err) => {
+        console.error("Lỗi khi lấy từ cần ôn:", err);
+        setVocabs([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -100,17 +98,14 @@ const VocabularyReview: React.FC = () => {
       // Tổng hợp kết quả cho batch hiện tại
       for (const vocab of currentBatch) {
         const result = reviewResults[vocab.id];
-        // Nếu đúng ở cả 3 phương pháp
         const allCorrect = methodOrder.every(method => result && result[method]);
-        await fetch("http://127.0.0.1:8000/api/vocab/review", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ vocab_id: vocab.id, remembered: !!allCorrect }),
-        });
+        try {
+          await submitReviewResult(vocab.id, !!allCorrect);
+        } catch (err) {
+          console.error(`Lỗi gửi kết quả review cho từ ${vocab.word}:`, err);
+        }
       }
+
       setCurrentMethodIndex(0);
       setCurrentBatchIndex((prev) => prev + 1);
     }

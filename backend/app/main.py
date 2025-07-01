@@ -21,9 +21,9 @@ app = FastAPI(
 
 # Cấu hình CORS để frontend có thể gọi API từ localhost hoặc production
 origins = [
-    "http://localhost:8000",  # frontend dev server
-    "http://127.0.0.1:8000",
-    "https://your-production-frontend.com",  # sau này bạn sửa nếu deploy
+    "http://localhost:3000",  # frontend dev server
+    "http://127.0.0.1:3000",
+    "https://yourdomain.com",  # sau này bạn sửa nếu deploy
 ]
 
 app.add_middleware(

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { fetchSystemVocabList, searchVocab } from "@/services/api"; 
 
 interface Vocab {
   id: number;
@@ -53,35 +54,36 @@ const Dictionary: React.FC = () => {
     };
   }, [hasMore, loading]);
 
-  const fetchMoreVocabs = () => {
+    const fetchMoreVocabs = async () => {
     setLoading(true);
-    fetch(`http://127.0.0.1:8000/api/vocab/system/list?offset=${offset}&limit=30`)
-      .then((res) => res.json())
-      .then((data: Vocab[]) => {
-        if (data.length === 0) {
-          setHasMore(false);
-        } else {
-          setVocabs((prev) => [...prev, ...data]);
-          setOffset((prev) => prev + 30);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    try {
+      const data = await fetchSystemVocabList(offset, 30);
+      if (data.length === 0) {
+        setHasMore(false);
+      } else {
+        setVocabs((prev) => [...prev, ...data]);
+        setOffset((prev) => prev + 30);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSearch = () => {
-    const searchKey = pendingSearch.trim().replace(/ /g, "_");
+  const handleSearch = async () => {
+    const searchKey = pendingSearch.trim();
     if (!searchKey) return;
 
-    fetch(
-      `http://127.0.0.1:8000/api/vocab/word/search?word=${encodeURIComponent(searchKey)}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setVocabs(data);
-        setHasMore(false); // Không tải thêm khi đang search
-        setSearch(pendingSearch);
-      });
+    try {
+      const data = await searchVocab(searchKey);
+      setVocabs(data);
+      setHasMore(false);
+      setSearch(pendingSearch);
+      console.log(search);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

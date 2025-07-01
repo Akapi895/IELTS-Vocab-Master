@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Volume2, Plus, Check } from "lucide-react";
+import { getExactWord, addVocabToUserList } from "@/services/api";
 
 interface Vocab {
   id: number;
@@ -24,24 +25,20 @@ const OneWord: React.FC = () => {
 
   useEffect(() => {
     if (!word) return;
-    fetch(`http://127.0.0.1:8000/api/vocab/word/exact?word=${encodeURIComponent(word)}`)
-      .then((res) => res.json())
+    setLoading(true);
+    getExactWord(word)
       .then((data) => setVocabs(data))
+      .catch((error) => {
+        console.error(error);
+        setVocabs([]);
+      })
       .finally(() => setLoading(false));
   }, [word]);
 
   const handleAdd = (vocabId: number) => {
-    const token = localStorage.getItem("access_token");
-    fetch("http://127.0.0.1:8000/api/vocab/system/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ vocab_id: vocabId }),
-    })
-      .then((res) => res.json())
-      .then(() => setAddedIds((prev) => [...prev, vocabId]));
+    addVocabToUserList(vocabId)
+      .then(() => setAddedIds((prev) => [...prev, vocabId]))
+      .catch((error) => console.error(error));
   };
 
   const playAudio = useCallback(async (word: string, pronunciation?: string) => {
