@@ -102,25 +102,13 @@ def get_system_vocab_list(
     )
     return vocabs
 
-
 @router.get("/word/search")
-def get_vocab_search(
+async def get_vocab_search(
     word: str,
     db: Session = Depends(get_db)
 ):
-    # Lấy các từ giống hệt
-    exact = db.query(VocabularyEntry).filter(
-        VocabularyEntry.word == word,
-        VocabularyEntry.system == 0
-    ).all()
-    # Lấy các từ chứa từ khóa, loại bỏ các từ đã lấy ở trên
-    similar = db.query(VocabularyEntry).filter(
-        VocabularyEntry.word.ilike(f"%{word}%"),
-        VocabularyEntry.system == 0,
-        VocabularyEntry.word != word
-    ).all()
-    print("exact")
-    return exact + similar
+    from app.crud.vocab_crud import get_or_create_vocab_from_api
+    return await get_or_create_vocab_from_api(db, word)
 
 @router.get("/word/exact")
 def get_vocab_exact(

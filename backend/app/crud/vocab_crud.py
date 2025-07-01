@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from app.models.user_vocab import UserVocab
 from app.models.vocabulary_entry import VocabularyEntry
 from app.utils.ef import sm2, next_review_date
+import httpx
 
 def add_user_vocab(db: Session, user_id: int, vocab_id: int):
     exists = db.query(UserVocab).filter_by(user_id=user_id, vocab_id=vocab_id).first()
@@ -181,3 +182,77 @@ def user_vocab_statistics(db: Session, user_id: int):
         "progress_chart": progress_chart
     }
 
+from app.utils.gemini_utils import fill_missing_fields_with_gemini
+
+async def get_or_create_vocab_from_api(db: Session, word: str):
+    exact = db.query(VocabularyEntry).filter(
+        VocabularyEntry.word == word,
+        VocabularyEntry.system == 0
+    ).all()
+
+    if exact:
+        return exact + db.query(VocabularyEntry).filter(
+            VocabularyEntry.word.ilike(f"%{word}%"),
+            VocabularyEntry.system == 0,
+            VocabularyEntry.word != word
+        ).all()
+
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+    async with httpx.AsyncClient(timeout=10) as client:
+        response = await client.get(url)
+        if response.status_code != 200:
+            return []
+        data = response.json()
+
+    raw_entries = []
+    for entry in data:
+        phonetics = entry.get("phonetics", [])
+        pronunciation = ""
+        phonetic = ""
+        for p in phonetics:
+            if not pronunciation and p.get("audio"):
+                pronunciation = p["audio"]
+            if not phonetic and p.get("text"):
+                phonetic = p["text"]
+
+        meanings = entry.get("meanings", [])
+        for meaning in meanings:
+            part_of_speech = meaning.get("partOfSpeech", "")
+            definitions = meaning.get("definitions", [])
+            for def_item in definitions:
+                definition = def_item.get("definition", "")
+                example = def_item.get("example", "")
+                raw_entries.append({
+                    "word": word,
+                    "part_of_speech": part_of_speech,
+                    "pronunciation": pronunciation or "",
+                    "phonetic": phonetic or "",
+                    "definition": definition,
+                    "example": example or "",
+                    "translation": "",
+                    "example_translation": ""
+                })
+
+    enriched_entries = await fill_missing_fields_with_gemini(raw_entries)
+
+    new_entries = []
+    for item in enriched_entries:
+        vocab_entry = VocabularyEntry(
+            word=item["word"],
+            part_of_speech=item["part_of_speech"],
+            pronunciation=item["pronunciation"],
+            phonetic=item["phonetic"].strip("/"),
+            definition=item["definition"],
+            example=item["example"],
+            translation=item["translation"],
+            example_translation=item["example_translation"],
+            system=0
+        )
+        db.add(vocab_entry)
+        new_entries.append(vocab_entry)
+
+    db.commit()
+    return db.query(VocabularyEntry).filter(
+        VocabularyEntry.word == word,
+        VocabularyEntry.system == 0
+    ).all()
