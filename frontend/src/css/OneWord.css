@@ -1,0 +1,74 @@
+.oneword-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 32px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.oneword-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.oneword-word {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #0057b8;
+}
+.oneword-pos {
+  font-size: 1.1rem;
+  color: #666;
+  background: #e3eaff;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.oneword-phonetic {
+  font-size: 1.1rem;
+  color: #1a7f37;
+}
+.oneword-pronunciation {
+  margin-left: 10px;
+}
+.oneword-definition,
+.oneword-translation,
+.oneword-example {
+  margin: 12px 0;
+  font-size: 1.1rem;
+}
+.oneword-example {
+  color: #444;
+}
+.oneword-example-translation {
+  color: #888;
+  margin-top: 4px;
+  font-size: 1rem;
+}
+.oneword-meaning-block {
+  margin-bottom: 20px;
+  background: #fafdff;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  padding: 18px;
+  position: relative;
+}
+.oneword-add-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 22px;
+  border: none;
+  background: #0057b8;
+  color: #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.oneword-add-btn:disabled {
+  background: #1a7f37;
+  cursor: default;
+}

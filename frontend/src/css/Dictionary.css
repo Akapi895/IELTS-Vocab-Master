@@ -1,0 +1,55 @@
+.dictionary-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 32px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.dictionary-search {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #bcd;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  outline: none;
+  box-sizing: border-box;
+}
+.dictionary-list {
+  margin-top: 10px;
+}
+.dictionary-item {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dictionary-item:hover {
+  background: #f5faff;
+}
+.dictionary-word {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0057b8;
+}
+.dictionary-pos {
+  font-size: 1rem;
+  color: #666;
+  background: #e3eaff;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.dictionary-phonetic {
+  font-size: 1rem;
+  color: #1a7f37;
+}
+.dictionary-empty {
+  color: #888;
+  text-align: center;
+  margin-top: 20px;
+}
