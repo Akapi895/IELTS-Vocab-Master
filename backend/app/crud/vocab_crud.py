@@ -233,19 +233,29 @@ async def get_or_create_vocab_from_api(db: Session, word: str):
                     "example_translation": ""
                 })
 
-    enriched_entries = await fill_missing_fields_with_gemini(raw_entries)
+    enriched_entries = []
+    try:
+        enriched_entries = await fill_missing_fields_with_gemini(raw_entries)
+    except Exception:
+        enriched_entries = []
+
+    # Nếu enrich thất bại hoặc trả về rỗng, dùng raw_entries
+    if not enriched_entries:
+        enriched_entries = raw_entries
 
     new_entries = []
     for item in enriched_entries:
+        # Bắt buộc phải có word, part_of_speech, definition
+        if not (item.get("word") and item.get("part_of_speech") and item.get("definition")):
+            continue
         vocab_entry = VocabularyEntry(
             word=item["word"],
             part_of_speech=item["part_of_speech"],
-            pronunciation=item["pronunciation"],
-            phonetic=item["phonetic"].strip("/"),
-            definition=item["definition"],
-            example=item["example"],
-            translation=item["translation"],
-            example_translation=item["example_translation"],
+            pronunciation=item.get("pronunciation", ""),
+            phonetic=item.get("phonetic", "").replace("[", "").replace("]", "").strip("/").strip(),            definition=item["definition"],
+            example=item.get("example", ""),
+            translation=item.get("translation", ""),
+            example_translation=item.get("example_translation", ""),
             system=0
         )
         db.add(vocab_entry)

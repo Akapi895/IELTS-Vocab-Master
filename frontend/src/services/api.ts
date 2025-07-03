@@ -1,5 +1,4 @@
-// const API_URL = "http://localhost:8000/api";
-const API_URL = "https://ielts-vocab-master.onrender.com/api";
+const API_URL = "http://localhost:8000/api";
 
 function getToken() {
   return localStorage.getItem("access_token") || "";
