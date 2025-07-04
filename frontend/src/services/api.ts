@@ -138,23 +138,28 @@ export async function addVocabToUserList(vocabId: number) {
 }
 
 // VocabularyList
-// export async function getUserVocabList() {
-//   const token = localStorage.getItem("access_token");
-//   const res = await fetch(`${API_URL}/vocab/user_vocab/list`, {
-//     headers: token ? { Authorization: `Bearer ${token}` } : {},
-//   });
-//   if (!res.ok) throw new Error("Không thể lấy danh sách từ vựng người dùng");
-//   return res.json();
-// }
-
-// export async function getUserDueVocab() {
-//   const token = localStorage.getItem("access_token");
-//   const res = await fetch(`${API_URL}/vocab/user_vocab/due`, {
-//     headers: token ? { Authorization: `Bearer ${token}` } : {},
-//   });
-//   if (!res.ok) throw new Error("Không thể lấy danh sách từ cần ôn");
-//   return res.json();
-// }
+export async function editUserVocab(payload: {
+  user_vocab_id: number;
+  word: string;
+  part_of_speech: string;
+  definition: string;
+  example: string;
+  pronunciation?: string;
+  phonetic?: string;
+  translation?: string;
+  example_translation?: string;
+}) {
+  const res = await fetch(`${API_URL}/vocab/user_vocab/edit`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Không thể cập nhật từ vựng");
+  return res.json();
+}
 
 // VocabularyReview
 interface Vocab {

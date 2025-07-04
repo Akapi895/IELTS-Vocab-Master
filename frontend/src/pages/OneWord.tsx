@@ -120,16 +120,27 @@ const OneWord: React.FC = () => {
               <span className="font-medium text-gray-700">Definition:</span>{" "}
               <span>{vocab.definition}</span>
             </div>
-            <div className="text-sm text-gray-600 italic">
-              Translation: {vocab.translation}
-            </div>
-            <div className="pt-2">
-              <div className="text-sm text-emerald-700 font-semibold">Example:</div>
-              <div className="italic">"{vocab.example}"</div>
-              <div className="text-sm text-gray-500">
-                <b></b>{vocab.example_translation}
+            {vocab.translation && vocab.translation.trim() !== "" && (
+              <div className="text-sm text-gray-600 italic">
+                Translation: {vocab.translation}
               </div>
-            </div>
+            )}
+            {(vocab.example && vocab.example.trim() !== "") || (vocab.example_translation && vocab.example_translation.trim() !== "") ? (
+              <div className="pt-2">
+                {vocab.example && vocab.example.trim() !== "" && (
+                  <>
+                    <div className="text-sm text-emerald-700 font-semibold">Example:</div>
+                    <div className="italic">"{vocab.example}"</div>
+                  </>
+                )}
+                {vocab.example_translation && vocab.example_translation.trim() !== "" && (
+                  <div className="text-sm text-gray-500">
+                    {vocab.example && vocab.example.trim() !== "" && <b></b>}
+                    {vocab.example_translation}
+                  </div>
+                )}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       ))}

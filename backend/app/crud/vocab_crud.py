@@ -266,3 +266,47 @@ async def get_or_create_vocab_from_api(db: Session, word: str):
         VocabularyEntry.word == word,
         VocabularyEntry.system == 0
     ).all()
+
+def edit_user_vocab_and_add_vocab_entry(db: Session, user_id: int, data):
+    # Lấy user_vocab hiện tại
+    user_vocab = db.query(UserVocab).filter_by(id=data.user_vocab_id, user_id=user_id).first()
+    if not user_vocab:
+        return None, "User vocab not found"
+    vocab = db.query(VocabularyEntry).filter_by(id=user_vocab.vocab_id).first()
+    if not vocab:
+        return None, "Vocab not found"
+
+    # Nếu vocab.system == user_id thì chỉ update
+    if getattr(vocab, "system", 0) == user_id:
+        vocab.word = data.word
+        vocab.part_of_speech = data.part_of_speech
+        vocab.definition = data.definition
+        vocab.example = data.example
+        vocab.pronunciation = data.pronunciation
+        vocab.phonetic = data.phonetic
+        vocab.translation = data.translation
+        vocab.example_translation = data.example_translation
+        db.commit()
+        db.refresh(vocab)
+        return {"user_vocab": user_vocab, "vocab": vocab}, "Updated"
+    else:
+        # Tạo bản ghi mới trong vocabulary_entry với system = user_id
+        new_vocab = VocabularyEntry(
+            word=data.word,
+            part_of_speech=data.part_of_speech,
+            pronunciation=data.pronunciation,
+            phonetic=data.phonetic,
+            definition=data.definition,
+            example=data.example,
+            translation=data.translation,
+            example_translation=data.example_translation,
+            system=user_id
+        )
+        db.add(new_vocab)
+        db.commit()
+        db.refresh(new_vocab)
+        # Cập nhật user_vocab để trỏ tới vocab_id mới
+        user_vocab.vocab_id = new_vocab.id
+        db.commit()
+        db.refresh(user_vocab)
+        return {"user_vocab": user_vocab, "vocab": new_vocab}, "Updated"

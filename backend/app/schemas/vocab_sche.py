@@ -45,3 +45,14 @@ class UserVocabStatisticsResponse(BaseModel):
     high_ease: int
     streak: int
     progress_chart: Dict[str, int]
+
+class UserVocabEditRequest(BaseModel):
+    user_vocab_id: int
+    word: str
+    part_of_speech: str
+    definition: str
+    example: str
+    pronunciation: str = ""
+    phonetic: str = ""
+    translation: str = ""
+    example_translation: str = ""

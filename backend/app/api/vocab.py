@@ -8,6 +8,7 @@ from app.schemas.vocab_sche import (
     PersonalVocabCreateRequest,
     UserVocabReviewRequest,
     PersonalVocabUpdateRequest,
+    UserVocabEditRequest
 )
 from app.crud import vocab_crud
 from app.models.vocabulary_entry import VocabularyEntry
@@ -120,3 +121,14 @@ def get_vocab_exact(
         VocabularyEntry.system == 0
     ).all()
     return exact
+
+@router.put("/user_vocab/edit")
+def edit_user_vocab(
+    data: UserVocabEditRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result, msg = vocab_crud.edit_user_vocab_and_add_vocab_entry(db, current_user.id, data)
+    if not result:
+        raise HTTPException(status_code=404, detail=msg)
+    return result
